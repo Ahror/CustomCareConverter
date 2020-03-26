@@ -1,24 +1,16 @@
-﻿using ReactiveUI;
-using System;
-using System.IO;
-using System.ComponentModel;
-using System.Linq;
-using System.Windows.Controls;
-using Microsoft.Win32;
-using System.Windows.Input;
-using System.Reactive.Concurrency;
-using System.Data;
-using System.Collections.Generic;
-using dBASE.NET;
+﻿using CsvHelper;
 using CustomCareConverter.Data;
+using dBASE.NET;
+using ReactiveUI;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using CsvHelper;
-using System.Globalization;
-using CsvHelper.Configuration.Attributes;
-using CsvHelper.Configuration;
-using CsvHelper.Expressions;
-using CsvHelper.TypeConversion;
 using System.Dynamic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Reactive.Concurrency;
+using System.Windows.Input;
 
 namespace CustomCareConverter.ViewModels
 {
@@ -26,77 +18,180 @@ namespace CustomCareConverter.ViewModels
     {
         public ExportViewModel()
         {
-            OpenFile = ReactiveCommand.Create(OpenDBFFile,outputScheduler: Scheduler.CurrentThread);
+            LoadModes = ReactiveCommand.Create(LoadFiles, outputScheduler: Scheduler.CurrentThread);
+            this.WhenAnyValue(vm => vm.SelectAll).Subscribe((old) =>
+            {
+                if (old == false)
+                    return;
+
+                SelectAllModes();
+            });
+
             Export = ReactiveCommand.Create(ExportDataToCSV);
-            Columns = new ObservableCollection<ColumnInfo>();
-            Rows = new ObservableCollection<RowInfo>();
+            Modes = new ObservableCollection<Mode>();
+        }
+
+        void SelectAllModes()
+        {
+            foreach (var mode in Modes)
+            {
+                mode.IsSelected = true;
+            }
         }
 
         private void ExportDataToCSV()
         {
-            //using (var writer = new StringWriter("test.csv",))
-            //using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-            //{
-            //    csv.WriteRecords(Rows);
-
-            //    writer.ToString();
-            //}
-
+            var selectedPrograms = new List<RowInfo>();
             using (MemoryStream stream = new MemoryStream())
             {
-                using (var reader = new StreamReader(stream))
                 using (StreamWriter writer = new StreamWriter(stream))
                 using (CsvWriter csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
                 {
-                    foreach (var rowInfo in Rows)
+                    foreach (var mode in Modes)
                     {
+                        if (mode.IsSelected == false)
+                        {
+                            continue;
+                        }
+
+                        selectedPrograms.AddRange(mode.ProgramsRowInfo);
                         var wrapper = new ExpandoObject() as IDictionary<string, object>;
-                        foreach (var rowItem in rowInfo.CellItems)
+                        foreach (var rowItem in mode.ModeRowInfo.CellItems)
                         {
                             wrapper.Add(rowItem.ColumnInfo.Name, rowItem.Value);
                         }
                         csv.WriteRecord(wrapper);
                         csv.NextRecord();
                     }
+                    writer.Flush();
                     stream.Position = 0;
-                    var aa = reader.ReadToEnd();
+
+                    using (var fileStream = File.Create("bank_mode.csv"))
+                    {
+                        stream.Seek(0, SeekOrigin.Begin);
+                        stream.CopyTo(fileStream);
+                    }
+                }
+            }
+
+            using (MemoryStream stream = new MemoryStream())
+            {
+                using (StreamWriter programWriter = new StreamWriter(stream))
+                {
+                    using (CsvWriter csv = new CsvWriter(programWriter, CultureInfo.InvariantCulture))
+                    {
+                        foreach (var programRowInfo in selectedPrograms)
+                        {
+                            var wrapper = new ExpandoObject() as IDictionary<string, object>;
+                            foreach (var rowItem in programRowInfo.CellItems)
+                            {
+                                wrapper.Add(rowItem.ColumnInfo.Name, rowItem.Value);
+                            }
+                            csv.WriteRecord(wrapper);
+                            csv.NextRecord();
+                        }
+                        programWriter.Flush();
+                        stream.Position = 0;
+
+                        using (var fileStream = File.Create("bank_program.csv"))
+                        {
+                            stream.Seek(0, SeekOrigin.Begin);
+                            stream.CopyTo(fileStream);
+                        }
+                    }
                 }
             }
         }
 
-        public ObservableCollection<ColumnInfo> Columns { get; }
+        public ObservableCollection<Mode> Modes { get; set; }
 
-        public ObservableCollection<RowInfo> Rows { get; set; }
-        private void OpenDBFFile()
+        private void LoadFiles()
         {
-            var dialog = new OpenFileDialog();
-            dialog.InitialDirectory = Directory.GetCurrentDirectory();
-            dialog.Filter = "Data Base File|*.DBF";
-            dialog.ShowDialog();
-            FilePath = dialog.FileName;
-            if (File.Exists(FilePath))
+            var dir = Directory.GetCurrentDirectory();
+            LoadModeFromFile(dir);
+            LoadProgramFromFile(dir);
+        }
+
+        private void LoadProgramFromFile(string dir)
+        {
+            var filePath = Path.Combine(dir, "DBF/bank_program.DBF");
+            if (File.Exists(filePath))
             {
                 var dbf = new Dbf();
-                dbf.Read(FilePath);
+                dbf.Read(filePath);
+                var columns = new List<ColumnInfo>();
                 foreach (DbfField field in dbf.Fields)
                 {
                     var columnInfo = new ColumnInfo(field.Name);
                     columnInfo.DataType = GetDataType(field.Type);
-                    Columns.Add(columnInfo);
+                    columns.Add(columnInfo);
                 }
 
                 foreach (DbfRecord record in dbf.Records)
                 {
                     var rowInfo = new RowInfo();
-                    Rows.Add(rowInfo);
                     for (int i = 0; i < dbf.Fields.Count; i++)
                     {
                         var rowValue = record[i]?.ToString();
-                        ColumnInfo columnInfo = Columns[i];
+                        ColumnInfo columnInfo = columns[i];
+
+                        if (columnInfo.Name == "BANKT_ID")
+                        {
+                            var mode = Modes.FirstOrDefault(m => m.Id == int.Parse(rowValue));
+                            mode.ProgramsRowInfo.Add(rowInfo);
+                        }
                         rowInfo.CellItems.Add(new CellItem { ColumnInfo = columnInfo, Value = rowValue, Order = i });
                     }
                 }
             }
+        }
+
+        private void LoadModeFromFile(string dir)
+        {
+            var filePath = Path.Combine(dir, "DBF/bank_mode.DBF");
+            if (File.Exists(filePath))
+            {
+                var dbf = new Dbf();
+                dbf.Read(filePath);
+                var columns = new List<ColumnInfo>();
+                foreach (DbfField field in dbf.Fields)
+                {
+                    var columnInfo = new ColumnInfo(field.Name);
+                    columnInfo.DataType = GetDataType(field.Type);
+                    columns.Add(columnInfo);
+                }
+
+                foreach (DbfRecord record in dbf.Records)
+                {
+                    var mode = new Mode();
+                    var rowInfo = new RowInfo();
+                    mode.ModeRowInfo = rowInfo;
+                    for (int i = 0; i < dbf.Fields.Count; i++)
+                    {
+                        var rowValue = record[i]?.ToString();
+                        ColumnInfo columnInfo = columns[i];
+
+                        if (columnInfo.Name == "MODENAME")
+                        {
+                            mode.Name = rowValue.ToString();
+                        }
+                        else if (columnInfo.Name == "BANKT_ID")
+                        {
+                            mode.Id = int.Parse(rowValue);
+                        }
+
+                        rowInfo.CellItems.Add(new CellItem { ColumnInfo = columnInfo, Value = rowValue, Order = i });
+                    }
+                    Modes.Add(mode);
+                }
+            }
+        }
+
+        bool _selectAll;
+        public bool SelectAll
+        {
+            get => _selectAll;
+            set => this.RaiseAndSetIfChanged(ref _selectAll, value);
         }
 
         DataType? GetDataType(DbfFieldType type)
@@ -134,7 +229,7 @@ namespace CustomCareConverter.ViewModels
             return dataType;
         }
 
-        public ICommand OpenFile { get;  }
+        public ICommand LoadModes { get; }
         public ICommand Export { get; }
         public string FilePath { get; private set; }
     }

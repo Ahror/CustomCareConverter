@@ -1,27 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+﻿using CustomCareConverter.ViewModels;
+using MahApps.Metro.Controls;
 
 namespace CustomCareConverter.Views
 {
     /// <summary>
     /// Interaction logic for ImportView.xaml
     /// </summary>
-    public partial class ImportView : Window
+    public partial class ImportView : MetroWindow
     {
+        ImportViewModel _viewModel;
         public ImportView()
         {
             InitializeComponent();
+            _viewModel = new ImportViewModel();
+            DataContext = _viewModel;
+        }
+
+        private void Window_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            _viewModel.LoadModes.Execute(null);
         }
     }
 }
