@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29905.134
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomCareConverter", "CustomCareConverter.csproj", "{7A244266-EB89-474A-97F0-64F93FAA5C73}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7A244266-EB89-474A-97F0-64F93FAA5C73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A244266-EB89-474A-97F0-64F93FAA5C73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A244266-EB89-474A-97F0-64F93FAA5C73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A244266-EB89-474A-97F0-64F93FAA5C73}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {24BE71DC-E8BE-447F-9CA0-FE8CC6EBFA14}
+	EndGlobalSection
+EndGlobal
