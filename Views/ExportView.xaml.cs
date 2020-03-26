@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CustomCareConverter.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,6 +23,7 @@ namespace CustomCareConverter.Views
         public ExportView()
         {
             InitializeComponent();
+            DataContext = new ExportViewModel();
         }
     }
 }
