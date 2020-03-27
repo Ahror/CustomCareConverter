@@ -103,9 +103,8 @@ namespace CustomCareConverter.ViewModels
                     }
                 }
             }
-            //ZipFile.ExtractToDirectory(zipPath, extractPath);
-            var folderBrowserDialog1 = new FolderBrowserDialog();
 
+            var folderBrowserDialog1 = new FolderBrowserDialog();
             DialogResult result = folderBrowserDialog1.ShowDialog();
             if (result == DialogResult.OK)
             {

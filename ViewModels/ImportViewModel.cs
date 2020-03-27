@@ -5,12 +5,12 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Data.OleDb;
-using System.Dynamic;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reactive.Concurrency;
+using System.Windows.Forms;
 using System.Windows.Input;
 
 namespace CustomCareConverter.ViewModels
@@ -132,9 +132,17 @@ namespace CustomCareConverter.ViewModels
 
         private void LoadFiles()
         {
-            var dir = Directory.GetCurrentDirectory();
-            LoadModeFromFile(dir);
-            LoadProgramFromFile(dir);
+            var openFileDialog = new OpenFileDialog();
+            openFileDialog.DefaultExt = "|*.zip";
+            var dialogResult = openFileDialog.ShowDialog();
+            if (dialogResult == DialogResult.OK)
+            {
+                var zipFile = openFileDialog.FileName;
+                var dir = Directory.GetCurrentDirectory();
+                ZipFile.ExtractToDirectory(zipFile, "CSV");
+                LoadModeFromFile(dir);
+                LoadProgramFromFile(dir);
+            }
         }
 
         private void LoadProgramFromFile(string dir)
