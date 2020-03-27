@@ -64,7 +64,7 @@
                     Height="50"
                     Margin="10"
                     Command="{Binding Export}"
-                    Content="Export Treatment" />
+                    Content="Import Treatment" />
             </Grid>
             <!--<Button
                 Height="50"

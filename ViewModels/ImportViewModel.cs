@@ -27,7 +27,7 @@ namespace CustomCareConverter.ViewModels
 
                 SelectAllModes();
             });
-            Export = ReactiveCommand.Create(ExportDataToDBF);
+            Export = ReactiveCommand.Create(ImportDataToDBF);
             Modes = new ObservableCollection<Mode>();
         }
 
@@ -39,46 +39,93 @@ namespace CustomCareConverter.ViewModels
             }
         }
 
-        private void ExportDataToDBF()
+        private void ImportDataToDBF()
         {
             var selectedPrograms = new List<RowInfo>();
-
             var dir = Directory.GetCurrentDirectory();
             var dbf = new Dbf();
             dbf.Read(Path.Combine(dir, "DBF/bank_mode.DBF"));
-            var record = dbf.CreateRecord();
-            record.Data[0] = 228;
-            record.Data[1] = "0142";
-            record.Data[2] = "Jaw PO day 2";
-            record.Data[3] = "User";
-            record.Data[4] = false;
-            record.Data[5] = DateTime.Now;
-            record.Data[6] = "Ahror";
-            record.Data[7] = DateTime.Now;
-            record.Data[8] = "Ahror";
-            record.Data[9] = "";
-            dbf.Write(Path.Combine(dir, "DBF/bank_mode.DBF"), DbfVersion.Unknown);
+            int maxBankId = (int)dbf.Records.Max(x => x.Data[0]);
+            foreach (var mode in Modes)
+            {
+                if (mode.IsSelected == false)
+                {
+                    //continue;
+                }
+                selectedPrograms.AddRange(mode.ProgramsRowInfo);
+                var record = dbf.CreateRecord();
+                int index = 0;
+                if (dbf.Records.FirstOrDefault(x => (int)x.Data[0] == int.Parse(mode.ModeRowInfo.CellItems[0].Value)) != null)
+                {
+                    maxBankId++;
+                    mode.ModeRowInfo.CellItems[0].Value = maxBankId.ToString();
+                }
+                foreach (var rowItem in mode.ModeRowInfo.CellItems)
+                {
+                    if (index == 4)
+                        record.Data[index] = rowItem.Value.ToLower() == "true";
+                    else if (index == 0)
+                        record.Data[index] = int.Parse(rowItem.Value);
+                    else if (index == 5)
+                        record.Data[index] = DateTime.Parse(rowItem.Value);
+                    else if (index == 7)
+                        record.Data[index] = DateTime.Parse(rowItem.Value);
+                    else
+                        record.Data[index] = rowItem.Value;
+                    index++;
+                }
+            }
+            var programDbf = new Dbf();
+            programDbf.Read(Path.Combine(dir, "DBF/bank_program.DBF"));
+            foreach (var program in selectedPrograms)
+            {
+                var record = programDbf.CreateRecord();
+                int index = 0;
+                foreach (var item in program.CellItems)
+                {
+                    if (!string.IsNullOrEmpty(item.Value))
+                    {
+                        if (index == 0)
+                            record.Data[index] = int.Parse(item.Value);
+                        else if (index == 1)
+                            record.Data[index] = int.Parse(item.Value);
+                        else if (index == 3)
+                            record.Data[index] = double.Parse(item.Value);
+                        else if (index == 5)
+                            record.Data[index] = double.Parse(item.Value);
+                        else if (index == 6)
+                            record.Data[index] = double.Parse(item.Value);
+                        else if (index == 7)
+                            record.Data[index] = int.Parse(item.Value);
+                        else if (index == 8)
+                            record.Data[index] = int.Parse(item.Value);
+                        else if (index == 11)
+                            record.Data[index] = DateTime.Parse(item.Value);
+                        else if (index == 13)
+                            record.Data[index] = DateTime.Parse(item.Value);
+                        else if (index == 15)
+                            record.Data[index] = double.Parse(item.Value);
+                        else
+                            record.Data[index] = item.Value;
+                    }
+               
+                    index++;
+                }
+            }
+            Save(dir, dbf, programDbf);
+        }
 
-            //foreach (var mode in Modes)
-            //{
-            //    if (mode.IsSelected == false)
-            //    {
-            //        continue;
-            //    }
+        private static void Save(string dir, Dbf bank_mode, Dbf bank_program)
+        {
+            var newdbf = new Dbf();
+            newdbf.Fields.AddRange(bank_mode.Fields);
+            newdbf.Records.AddRange(bank_mode.Records);
+            newdbf.Write(Path.Combine(dir, "DBF/bank_mode.DBF"));
 
-            //    selectedPrograms.AddRange(mode.ProgramsRowInfo);
-            //    foreach (var rowItem in mode.ModeRowInfo.CellItems)
-            //    {
-            //        //var field = new DbfField(rowItem.ColumnInfo.Name, DbfFieldType
-            //        //dbf.Fields.Add())
-            //        var record = dbf.CreateRecord();
-            //        record.Data.Add(rowItem);
-            //        //dbf.Records.Add(new DbfRecord());
-
-
-            //    }
-            //}
-
+            var newBankProgram = new Dbf();
+            newBankProgram.Fields.AddRange(bank_program.Fields);
+            newBankProgram.Records.AddRange(bank_program.Records);
+            newBankProgram.Write(Path.Combine(dir, "DBF/bank_program.DBF"));
         }
 
         public static bool InsertDataIntoDBF(string path)
