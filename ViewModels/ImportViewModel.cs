@@ -50,7 +50,7 @@ namespace CustomCareConverter.ViewModels
             {
                 if (mode.IsSelected == false)
                 {
-                    //continue;
+                    continue;
                 }
                 selectedPrograms.AddRange(mode.ProgramsRowInfo);
                 var record = dbf.CreateRecord();
@@ -108,7 +108,7 @@ namespace CustomCareConverter.ViewModels
                         else
                             record.Data[index] = item.Value;
                     }
-               
+
                     index++;
                 }
             }

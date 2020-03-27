@@ -8,8 +8,10 @@ using System.Collections.ObjectModel;
 using System.Dynamic;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reactive.Concurrency;
+using System.Windows.Forms;
 using System.Windows.Input;
 
 namespace CustomCareConverter.ViewModels
@@ -66,7 +68,7 @@ namespace CustomCareConverter.ViewModels
                     writer.Flush();
                     stream.Position = 0;
 
-                    using (var fileStream = File.Create("bank_mode.csv"))
+                    using (var fileStream = File.Create("CSV/bank_mode.csv"))
                     {
                         stream.Seek(0, SeekOrigin.Begin);
                         stream.CopyTo(fileStream);
@@ -93,13 +95,28 @@ namespace CustomCareConverter.ViewModels
                         programWriter.Flush();
                         stream.Position = 0;
 
-                        using (var fileStream = File.Create("bank_program.csv"))
+                        using (var fileStream = File.Create("CSV/bank_program.csv"))
                         {
                             stream.Seek(0, SeekOrigin.Begin);
                             stream.CopyTo(fileStream);
                         }
                     }
                 }
+            }
+            //ZipFile.ExtractToDirectory(zipPath, extractPath);
+            var folderBrowserDialog1 = new FolderBrowserDialog();
+
+            DialogResult result = folderBrowserDialog1.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                string folderName = folderBrowserDialog1.SelectedPath;
+                var zipPath = Path.Combine(folderName, "CSV.zip");
+                if (File.Exists(zipPath))
+                {
+                    try { File.Delete(zipPath); }
+                    catch { }
+                }
+                ZipFile.CreateFromDirectory("CSV", zipPath);
             }
         }
 
@@ -112,7 +129,7 @@ namespace CustomCareConverter.ViewModels
             LoadProgramFromFile(dir);
         }
 
-       
+
 
         private void LoadProgramFromFile(string dir)
         {
