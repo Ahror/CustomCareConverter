@@ -1,4 +1,5 @@
-﻿using System;
+﻿using dBASE.NET;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,6 +17,8 @@ namespace CustomCareConverter.Data
 
         public string Name { get; set; }
         public DataType? DataType { get; set; }
+
+        public DbfFieldType FieldType { get; set; }
 
         public override string ToString()
         {

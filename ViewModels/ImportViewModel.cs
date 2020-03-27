@@ -5,6 +5,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data.OleDb;
 using System.Dynamic;
 using System.Globalization;
 using System.IO;
@@ -42,19 +43,65 @@ namespace CustomCareConverter.ViewModels
         {
             var selectedPrograms = new List<RowInfo>();
 
+            var dir = Directory.GetCurrentDirectory();
             var dbf = new Dbf();
-            foreach (var mode in Modes)
-            {
-                if (mode.IsSelected == false)
-                {
-                    continue;
-                }
+            dbf.Read(Path.Combine(dir, "DBF/bank_mode.DBF"));
+            var record = dbf.CreateRecord();
+            record.Data[0] = 228;
+            record.Data[1] = "0142";
+            record.Data[2] = "Jaw PO day 2";
+            record.Data[3] = "User";
+            record.Data[4] = false;
+            record.Data[5] = DateTime.Now;
+            record.Data[6] = "Ahror";
+            record.Data[7] = DateTime.Now;
+            record.Data[8] = "Ahror";
+            record.Data[9] = "";
+            dbf.Write(Path.Combine(dir, "DBF/bank_mode.DBF"), DbfVersion.Unknown);
 
-                selectedPrograms.AddRange(mode.ProgramsRowInfo);
-                foreach (var rowItem in mode.ModeRowInfo.CellItems)
+            //foreach (var mode in Modes)
+            //{
+            //    if (mode.IsSelected == false)
+            //    {
+            //        continue;
+            //    }
+
+            //    selectedPrograms.AddRange(mode.ProgramsRowInfo);
+            //    foreach (var rowItem in mode.ModeRowInfo.CellItems)
+            //    {
+            //        //var field = new DbfField(rowItem.ColumnInfo.Name, DbfFieldType
+            //        //dbf.Fields.Add())
+            //        var record = dbf.CreateRecord();
+            //        record.Data.Add(rowItem);
+            //        //dbf.Records.Add(new DbfRecord());
+
+
+            //    }
+            //}
+
+        }
+
+        public static bool InsertDataIntoDBF(string path)
+        {
+            try
+            {
+                string strLogConnectionString = "Provider=VFPOLEDB;Data Source=" + path + ";Collating Sequence=machine;Mode=ReadWrite;";
+                string query = @"INSERT INTO CustomProperties (Public) VALUES (@Public)";
+                using (OleDbConnection connection = new OleDbConnection(strLogConnectionString))
                 {
-                    //dbf.Fields.Add(new DbfField(rowItem.ColumnInfo.Name,DbfFieldType.))
+                    OleDbCommand command = new OleDbCommand(query, connection);
+                    command.Parameters.AddWithValue("@Public", "True");
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                    connection.Close();
                 }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                //string viewError = JsonConvert.SerializeObject(ex);
+                //return false; << breakpoint here
+                return false;
             }
         }
 
