@@ -17,6 +17,12 @@ namespace CustomCareConverter.ViewModels
 {
     public class ImportViewModel : ReactiveObject
     {
+        string _resultText;
+        public string ResultText
+        {
+            get => _resultText;
+            set => this.RaiseAndSetIfChanged(ref _resultText, value);
+        }
         public ImportViewModel()
         {
             LoadModes = ReactiveCommand.Create(LoadFiles, outputScheduler: Scheduler.CurrentThread);
@@ -76,6 +82,13 @@ namespace CustomCareConverter.ViewModels
                 }
             }
             var programDbf = new Dbf();
+            ImportBankProgram(selectedPrograms, dir, programDbf);
+            Save(dir, dbf, programDbf);
+            ResultText = "Import finished!";
+        }
+
+        private static void ImportBankProgram(List<RowInfo> selectedPrograms, string dir, Dbf programDbf)
+        {
             programDbf.Read(Path.Combine(dir, "DBF/bank_program.DBF"));
             foreach (var program in selectedPrograms)
             {
@@ -112,7 +125,6 @@ namespace CustomCareConverter.ViewModels
                     index++;
                 }
             }
-            Save(dir, dbf, programDbf);
         }
 
         private static void Save(string dir, Dbf bank_mode, Dbf bank_program)
@@ -139,9 +151,24 @@ namespace CustomCareConverter.ViewModels
             {
                 var zipFile = openFileDialog.FileName;
                 var dir = Directory.GetCurrentDirectory();
+                DeleteExistedFile();
                 ZipFile.ExtractToDirectory(zipFile, "CSV");
                 LoadModeFromFile(dir);
                 LoadProgramFromFile(dir);
+            }
+        }
+
+        private static void DeleteExistedFile()
+        {
+            System.IO.DirectoryInfo di = new DirectoryInfo("CSV");
+
+            foreach (FileInfo file in di.GetFiles())
+            {
+                file.Delete();
+            }
+            foreach (DirectoryInfo dir in di.GetDirectories())
+            {
+                dir.Delete(true);
             }
         }
 

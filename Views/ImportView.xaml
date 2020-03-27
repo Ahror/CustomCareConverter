@@ -60,8 +60,7 @@
                     </DataGrid.Columns>
                 </DataGrid>
                 <WrapPanel Grid.Row="2" Margin="10">
-                    <CheckBox Margin="10" Content="Select All" />
-                    <CheckBox Margin="10" Content="Clear All" />
+                    <TextBlock Text="{Binding ResultText}"/>
                 </WrapPanel>
                 <Button
                     Grid.Row="3"
