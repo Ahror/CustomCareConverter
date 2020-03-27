@@ -9,6 +9,10 @@
     Title="ExportView"
     Width="800"
     Height="450"
+    MinWidth="1048"
+    MinHeight="987"
+    MaxWidth="1048"
+    MaxHeight="987"
     FontSize="16"
     Loaded="Window_Loaded"
     mc:Ignorable="d">

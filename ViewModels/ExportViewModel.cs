@@ -112,6 +112,8 @@ namespace CustomCareConverter.ViewModels
             LoadProgramFromFile(dir);
         }
 
+       
+
         private void LoadProgramFromFile(string dir)
         {
             var filePath = Path.Combine(dir, "DBF/bank_program.DBF");

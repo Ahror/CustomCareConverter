@@ -128,30 +128,6 @@ namespace CustomCareConverter.ViewModels
             newBankProgram.Write(Path.Combine(dir, "DBF/bank_program.DBF"));
         }
 
-        public static bool InsertDataIntoDBF(string path)
-        {
-            try
-            {
-                string strLogConnectionString = "Provider=VFPOLEDB;Data Source=" + path + ";Collating Sequence=machine;Mode=ReadWrite;";
-                string query = @"INSERT INTO CustomProperties (Public) VALUES (@Public)";
-                using (OleDbConnection connection = new OleDbConnection(strLogConnectionString))
-                {
-                    OleDbCommand command = new OleDbCommand(query, connection);
-                    command.Parameters.AddWithValue("@Public", "True");
-                    connection.Open();
-                    command.ExecuteNonQuery();
-                    connection.Close();
-                }
-                return true;
-            }
-            catch (Exception ex)
-            {
-                //string viewError = JsonConvert.SerializeObject(ex);
-                //return false; << breakpoint here
-                return false;
-            }
-        }
-
         public ObservableCollection<Mode> Modes { get; set; }
 
         private void LoadFiles()
