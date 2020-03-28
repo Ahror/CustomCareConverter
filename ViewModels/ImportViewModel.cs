@@ -10,6 +10,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reactive.Concurrency;
+using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 
@@ -142,7 +143,7 @@ namespace CustomCareConverter.ViewModels
         private void LoadFiles()
         {
             var openFileDialog = new OpenFileDialog();
-            openFileDialog.DefaultExt = "|*.zip";
+            openFileDialog.Filter = "|*.zip";
             var dialogResult = openFileDialog.ShowDialog();
             if (dialogResult == DialogResult.OK)
             {
@@ -152,12 +153,18 @@ namespace CustomCareConverter.ViewModels
                 ZipFile.ExtractToDirectory(zipFile, "CSV");
                 LoadModeFromFile(dir);
                 LoadProgramFromFile(dir);
+                IsZipFileSelected = true;
+            }
+            else
+            {
+                IsZipFileSelected = false;
             }
         }
+        public bool IsZipFileSelected { get; set; }
 
-        private static void DeleteExistedFile()
+        void DeleteExistedFile()
         {
-            System.IO.DirectoryInfo di = new DirectoryInfo("CSV");
+            DirectoryInfo di = new DirectoryInfo("CSV");
 
             foreach (FileInfo file in di.GetFiles())
             {
@@ -169,7 +176,7 @@ namespace CustomCareConverter.ViewModels
             }
         }
 
-        private void LoadProgramFromFile(string dir)
+        void LoadProgramFromFile(string dir)
         {
             var filePath = Path.Combine(dir, "CSV/bank_program.csv");
             if (File.Exists(filePath))

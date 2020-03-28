@@ -25,6 +25,18 @@ namespace CustomCareConverter.ViewModels
             this.WhenAnyValue(vm => vm.IsFileLocked).Subscribe((old) =>
             {
                 ShowRetryWindow = !old;
+                if (!ShowRetryWindow)
+                {
+                    Message = "Please Close the CustomCare App to continue";
+                }
+            });
+            this.WhenAnyValue(vm => vm.IsFileExist).Subscribe((old) =>
+            {
+                ShowRetryWindow = !old;
+                if (!ShowRetryWindow)
+                {
+                    Message = "Files do not exists in the folder";
+                }
             });
         }
 
@@ -38,7 +50,21 @@ namespace CustomCareConverter.ViewModels
             var currentDir = Directory.GetCurrentDirectory();
             var modeFileInfo = new FileInfo(Path.Combine(currentDir, "DBF/bank_mode.DBF"));
             var programFileInfo = new FileInfo(Path.Combine(currentDir, "DBF/bank_mode.DBF"));
-            IsFileLocked = !CheckIsFileLocked(modeFileInfo) || !CheckIsFileLocked(programFileInfo);
+            if (programFileInfo.Exists)
+            {
+                IsFileLocked = !CheckIsFileLocked(modeFileInfo) || !CheckIsFileLocked(programFileInfo);
+            }
+            else
+            {
+                IsFileExist = false;
+            }
+        }
+
+        bool _isFileExist;
+        public bool IsFileExist
+        {
+            get => _isFileExist;
+            set => this.RaiseAndSetIfChanged(ref _isFileExist, value);
         }
 
         bool _showRetryWindow;
@@ -55,6 +81,14 @@ namespace CustomCareConverter.ViewModels
             get => _isFileLocked;
             set => this.RaiseAndSetIfChanged(ref _isFileLocked, value);
         }
+
+        string _message;
+        public string Message
+        {
+            get => _message;
+            set => this.RaiseAndSetIfChanged(ref _message, value);
+        }
+
 
 
         protected virtual bool CheckIsFileLocked(FileInfo file)
@@ -81,7 +115,14 @@ namespace CustomCareConverter.ViewModels
         void ShowImportView()
         {
             ImportView view = new ImportView();
-            view.ShowDialog();
+            try
+            {
+                view.ShowDialog();
+            }
+            catch (Exception)
+            {
+
+            }
         }
     }
 }

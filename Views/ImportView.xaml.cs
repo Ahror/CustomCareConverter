@@ -8,17 +8,21 @@ namespace CustomCareConverter.Views
     /// </summary>
     public partial class ImportView : MetroWindow
     {
-        ImportViewModel _viewModel;
+        internal ImportViewModel ViewModel { get; }
         public ImportView()
         {
             InitializeComponent();
-            _viewModel = new ImportViewModel();
-            DataContext = _viewModel;
+            ViewModel = new ImportViewModel();
+            DataContext = ViewModel;
         }
 
         private void Window_Loaded(object sender, System.Windows.RoutedEventArgs e)
         {
-            _viewModel.LoadModes.Execute(null);
+            ViewModel.LoadModes.Execute(null);
+            if (!ViewModel.IsZipFileSelected)
+            {
+                this.Close();
+            }
         }
     }
 }

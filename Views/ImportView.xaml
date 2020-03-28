@@ -34,34 +34,48 @@
                     <RowDefinition Height="auto" />
                     <RowDefinition Height="auto" />
                 </Grid.RowDefinitions>
-                <TextBlock Margin="10" Text="Select Modes to Export" />
+                <TextBlock Margin="15,10" Text="Select Modes to Import" />
                 <DataGrid
                     Name="uiModes"
                     Grid.Row="1"
-                    MinWidth="200"
+                    MinWidth="400"
+                    Margin="20,0"
                     HorizontalAlignment="Left"
                     AutoGenerateColumns="False"
                     CanUserAddRows="False"
+                    FontSize="18"
                     ItemsSource="{Binding Modes}"
                     SelectionMode="Extended">
                     <DataGrid.Columns>
-                        <DataGridCheckBoxColumn Binding="{Binding IsSelected}">
-                            <DataGridCheckBoxColumn.HeaderTemplate>
+                        <DataGridTemplateColumn MaxWidth="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox HorizontalAlignment="Center" IsChecked="{Binding Path=IsSelected, UpdateSourceTrigger=PropertyChanged}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                            <DataGridTemplateColumn.HeaderTemplate>
                                 <DataTemplate>
                                     <CheckBox
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         HorizontalContentAlignment="Center"
                                         VerticalContentAlignment="Center"
+                                        FontSize="18"
                                         IsChecked="{Binding ElementName=uiModes, Path=DataContext.SelectAll}" />
                                 </DataTemplate>
-                            </DataGridCheckBoxColumn.HeaderTemplate>
-                        </DataGridCheckBoxColumn>
-                        <DataGridTextColumn Binding="{Binding Name}" Header="Name" />
+                            </DataGridTemplateColumn.HeaderTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn
+                            Binding="{Binding Name}"
+                            Header="Name"
+                            IsReadOnly="True" />
                     </DataGrid.Columns>
                 </DataGrid>
-                <WrapPanel Grid.Row="2" Margin="10">
-                    <TextBlock Text="{Binding ResultText}"/>
+                <WrapPanel
+                    Grid.Row="2"
+                    Margin="10"
+                    HorizontalAlignment="Center">
+                    <TextBlock FontSize="25" Text="{Binding ResultText}" />
                 </WrapPanel>
                 <Button
                     Grid.Row="3"
@@ -70,12 +84,6 @@
                     Command="{Binding Export}"
                     Content="Import Treatment" />
             </Grid>
-            <!--<Button
-                Height="50"
-                Margin="10"
-                Command="{Binding ShowExportTreatment}"
-                Content="Export Treatment" />-->
         </Grid>
-
     </Grid>
 </mahapps:MetroWindow>
