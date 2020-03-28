@@ -18,6 +18,12 @@ namespace CustomCareConverter.ViewModels
 {
     public class ExportViewModel : ReactiveObject
     {
+        string _resultText;
+        public string ResultText
+        {
+            get => _resultText;
+            set => this.RaiseAndSetIfChanged(ref _resultText, value);
+        }
         public ExportViewModel()
         {
             LoadModes = ReactiveCommand.Create(LoadFiles, outputScheduler: Scheduler.CurrentThread);
@@ -73,6 +79,13 @@ namespace CustomCareConverter.ViewModels
                 }
             }
 
+            ExportBankPrograms(selectedPrograms);
+            ZippingFile();
+            ResultText = "Export finished!";
+        }
+
+        private static void ExportBankPrograms(List<RowInfo> selectedPrograms)
+        {
             using (MemoryStream stream = new MemoryStream())
             {
                 using (StreamWriter programWriter = new StreamWriter(stream))
@@ -100,7 +113,10 @@ namespace CustomCareConverter.ViewModels
                     }
                 }
             }
+        }
 
+        private static void ZippingFile()
+        {
             var folderBrowserDialog1 = new FolderBrowserDialog();
             DialogResult result = folderBrowserDialog1.ShowDialog();
             if (result == DialogResult.OK)
