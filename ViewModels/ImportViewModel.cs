@@ -20,22 +20,19 @@ namespace CustomCareConverter.ViewModels
         public ImportViewModel()
         {
             LoadModes = ReactiveCommand.Create(LoadFiles, outputScheduler: Scheduler.CurrentThread);
-            this.WhenAnyValue(vm => vm.SelectAll).Subscribe((old) =>
-            {
-                if (old == false)
-                    return;
-
-                SelectAllModes();
-            });
             Export = ReactiveCommand.Create(ImportDataToDBF);
             Modes = new ObservableCollection<Mode>();
+            this.WhenAnyValue(vm => vm.SelectAll).Subscribe((old) =>
+            {
+                SelectAllModes(old);
+            });
         }
 
-        void SelectAllModes()
+        void SelectAllModes(bool selectAll)
         {
             foreach (var mode in Modes)
             {
-                mode.IsSelected = true;
+                mode.IsSelected = selectAll;
             }
         }
 

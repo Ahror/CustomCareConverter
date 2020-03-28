@@ -39,6 +39,7 @@
                     Name="uiModes"
                     Grid.Row="1"
                     MinWidth="200"
+                    CanUserAddRows="False"
                     HorizontalAlignment="Left"
                     AutoGenerateColumns="False"
                     ItemsSource="{Binding Modes}"

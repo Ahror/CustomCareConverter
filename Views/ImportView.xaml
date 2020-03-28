@@ -41,6 +41,7 @@
                     MinWidth="200"
                     HorizontalAlignment="Left"
                     AutoGenerateColumns="False"
+                    CanUserAddRows="False"
                     ItemsSource="{Binding Modes}"
                     SelectionMode="Extended">
                     <DataGrid.Columns>

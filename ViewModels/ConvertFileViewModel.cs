@@ -1,16 +1,9 @@
-﻿using CsvHelper;
-using CustomCareConverter.Data;
-using CustomCareConverter.Views;
-using dBASE.NET;
+﻿using CustomCareConverter.Views;
 using ReactiveUI;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Dynamic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Reactive.Concurrency;
+using System.Windows;
 using System.Windows.Input;
 
 namespace CustomCareConverter.ViewModels
@@ -20,20 +13,24 @@ namespace CustomCareConverter.ViewModels
         public ICommand ShowExportTreatment { get; private set; }
         public ICommand ShowImportTreatment { get; private set; }
         public ICommand Retry { get; set; }
+        public ICommand Cancel { get; set; }
 
         public ConvertFileViewModel()
         {
             ShowExportTreatment = ReactiveCommand.Create(ShowExportView, outputScheduler: Scheduler.CurrentThread);
             ShowImportTreatment = ReactiveCommand.Create(ShowImportView, outputScheduler: Scheduler.CurrentThread);
+            Cancel = ReactiveCommand.Create(CloseApp, outputScheduler: Scheduler.CurrentThread);
             ValidateFiles();
-            Retry = ReactiveCommand.Create(() =>
-            {
-                ValidateFiles();
-            });
+            Retry = ReactiveCommand.Create(ValidateFiles);
             this.WhenAnyValue(vm => vm.IsFileLocked).Subscribe((old) =>
             {
                 ShowRetryWindow = !old;
             });
+        }
+
+        void CloseApp()
+        {
+            Application.Current.Shutdown();
         }
 
         void ValidateFiles()
@@ -65,30 +62,23 @@ namespace CustomCareConverter.ViewModels
             try
             {
                 using (FileStream stream = file.Open(FileMode.Open, FileAccess.Read, FileShare.None))
-                {
                     stream.Close();
-                }
             }
             catch (IOException)
             {
-                //the file is unavailable because it is:
-                //still being written to
-                //or being processed by another thread
-                //or does not exist (has already been processed)
                 return true;
             }
 
-            //file is not locked
             return false;
         }
 
-        private void ShowExportView()
+        void ShowExportView()
         {
             ExportView view = new ExportView();
             view.ShowDialog();
         }
 
-        private void ShowImportView()
+        void ShowImportView()
         {
             ImportView view = new ImportView();
             view.ShowDialog();

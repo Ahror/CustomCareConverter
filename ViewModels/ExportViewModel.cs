@@ -21,23 +21,20 @@ namespace CustomCareConverter.ViewModels
         public ExportViewModel()
         {
             LoadModes = ReactiveCommand.Create(LoadFiles, outputScheduler: Scheduler.CurrentThread);
-            this.WhenAnyValue(vm => vm.SelectAll).Subscribe((old) =>
-            {
-                if (old == false)
-                    return;
-
-                SelectAllModes();
-            });
-
             Export = ReactiveCommand.Create(ExportDataToCSV);
             Modes = new ObservableCollection<Mode>();
+            this.WhenAnyValue(vm => vm.SelectAll).Subscribe((old) =>
+            {
+                SelectAllModes(old);
+            });
+
         }
 
-        void SelectAllModes()
+        void SelectAllModes(bool selectAll)
         {
             foreach (var mode in Modes)
             {
-                mode.IsSelected = true;
+                mode.IsSelected = selectAll;
             }
         }
 
@@ -128,9 +125,7 @@ namespace CustomCareConverter.ViewModels
             LoadProgramFromFile(dir);
         }
 
-
-
-        private void LoadProgramFromFile(string dir)
+        void LoadProgramFromFile(string dir)
         {
             var filePath = Path.Combine(dir, "DBF/bank_program.DBF");
             if (File.Exists(filePath))
@@ -164,7 +159,7 @@ namespace CustomCareConverter.ViewModels
             }
         }
 
-        private void LoadModeFromFile(string dir)
+        void LoadModeFromFile(string dir)
         {
             var filePath = Path.Combine(dir, "DBF/bank_mode.DBF");
             if (File.Exists(filePath))
@@ -246,7 +241,6 @@ namespace CustomCareConverter.ViewModels
             }
             return dataType;
         }
-
         public ICommand LoadModes { get; }
         public ICommand Export { get; }
         public string FilePath { get; private set; }
