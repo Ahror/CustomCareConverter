@@ -12,7 +12,7 @@
     MaxHeight="450"
     mc:Ignorable="d">
     <Grid>
-        <Grid Visibility="{Binding IsFileLocked, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />

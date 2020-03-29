@@ -25,15 +25,15 @@ namespace CustomCareConverter.ViewModels
             this.WhenAnyValue(vm => vm.IsFileLocked).Subscribe((old) =>
             {
                 ShowRetryWindow = !old;
-                if (!ShowRetryWindow)
+                if (ShowRetryWindow)
                 {
                     Message = "Please Close the CustomCare App to continue";
                 }
             });
             this.WhenAnyValue(vm => vm.IsFileExist).Subscribe((old) =>
             {
-                ShowRetryWindow = !old;
-                if (!ShowRetryWindow)
+                ShowRetryWindow = old;
+                if (ShowRetryWindow)
                 {
                     Message = "Files do not exists in the folder";
                 }

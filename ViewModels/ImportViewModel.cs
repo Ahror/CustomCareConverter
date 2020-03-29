@@ -149,7 +149,8 @@ namespace CustomCareConverter.ViewModels
             {
                 var zipFile = openFileDialog.FileName;
                 var dir = Directory.GetCurrentDirectory();
-                DeleteExistedFile();
+                if (Directory.Exists("CSV"))
+                    DeleteExistedFile();
                 ZipFile.ExtractToDirectory(zipFile, "CSV");
                 LoadModeFromFile(dir);
                 LoadProgramFromFile(dir);
