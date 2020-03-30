@@ -24,15 +24,27 @@ namespace CustomCareConverter.ViewModels
             get => _resultText;
             set => this.RaiseAndSetIfChanged(ref _resultText, value);
         }
+
+        bool _closeButtonClicked;
+        public bool CloseButtonClicked
+        {
+            get => _closeButtonClicked;
+            set => this.RaiseAndSetIfChanged(ref _closeButtonClicked, value);
+        }
         public ImportViewModel()
         {
             LoadModes = ReactiveCommand.Create(LoadFiles, outputScheduler: Scheduler.CurrentThread);
+            Cancel = ReactiveCommand.Create(CloseWindow);
             Export = ReactiveCommand.Create(ImportDataToDBF);
             Modes = new ObservableCollection<Mode>();
             this.WhenAnyValue(vm => vm.SelectAll).Subscribe((old) =>
             {
                 SelectAllModes(old);
             });
+        }
+        private void CloseWindow()
+        {
+            CloseButtonClicked = !CloseButtonClicked;
         }
 
         void SelectAllModes(bool selectAll)
@@ -376,6 +388,7 @@ namespace CustomCareConverter.ViewModels
         }
 
         public ICommand LoadModes { get; }
+        public ICommand Cancel { get; }
         public ICommand Export { get; }
         public string FilePath { get; private set; }
     }

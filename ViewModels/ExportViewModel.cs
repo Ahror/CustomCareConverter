@@ -24,10 +24,18 @@ namespace CustomCareConverter.ViewModels
             get => _resultText;
             set => this.RaiseAndSetIfChanged(ref _resultText, value);
         }
+
+        bool _closeButtonClicked;
+        public bool CloseButtonClicked
+        {
+            get => _closeButtonClicked;
+            set => this.RaiseAndSetIfChanged(ref _closeButtonClicked, value);
+        }
         public ExportViewModel()
         {
             LoadModes = ReactiveCommand.Create(LoadFiles, outputScheduler: Scheduler.CurrentThread);
             Export = ReactiveCommand.Create(ExportDataToCSV);
+            Cancel = ReactiveCommand.Create(CloseWindow);
             Modes = new ObservableCollection<Mode>();
             this.WhenAnyValue(vm => vm.SelectAll).Subscribe((old) =>
             {
@@ -42,6 +50,11 @@ namespace CustomCareConverter.ViewModels
             {
                 mode.IsSelected = selectAll;
             }
+        }
+
+        private void CloseWindow()
+        {
+            CloseButtonClicked = !CloseButtonClicked;
         }
 
         private void ExportDataToCSV()
@@ -259,6 +272,7 @@ namespace CustomCareConverter.ViewModels
         }
         public ICommand LoadModes { get; }
         public ICommand Export { get; }
+        public ICommand Cancel { get; }
         public string FilePath { get; private set; }
     }
 }
