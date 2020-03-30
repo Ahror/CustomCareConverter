@@ -143,7 +143,7 @@ namespace CustomCareConverter.ViewModels
 
         void LoadProgramFromFile(string dir)
         {
-            var filePath = Path.Combine(dir, "DBF/bank_program.DBF");
+            var filePath = Path.Combine(dir, "bank_program.DBF");
             if (File.Exists(filePath))
             {
                 var dbf = new Dbf();
@@ -177,7 +177,7 @@ namespace CustomCareConverter.ViewModels
 
         void LoadModeFromFile(string dir)
         {
-            var filePath = Path.Combine(dir, "DBF/bank_mode.DBF");
+            var filePath = Path.Combine(dir, "bank_mode.DBF");
             if (File.Exists(filePath))
             {
                 var dbf = new Dbf();

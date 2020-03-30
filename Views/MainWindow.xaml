@@ -39,7 +39,7 @@
             </Grid>
 
         </Grid>
-        <Grid Visibility="{Binding ShowRetryWindow, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <Grid Background="Gray" Visibility="{Binding ShowRetryWindow, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />

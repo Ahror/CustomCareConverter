@@ -32,7 +32,7 @@ namespace CustomCareConverter.ViewModels
             });
             this.WhenAnyValue(vm => vm.IsFileExist).Subscribe((old) =>
             {
-                ShowRetryWindow = old;
+                ShowRetryWindow = !old;
                 if (ShowRetryWindow)
                 {
                     Message = "Files do not exists in the folder";
@@ -48,11 +48,12 @@ namespace CustomCareConverter.ViewModels
         void ValidateFiles()
         {
             var currentDir = Directory.GetCurrentDirectory();
-            var modeFileInfo = new FileInfo(Path.Combine(currentDir, "DBF/bank_mode.DBF"));
-            var programFileInfo = new FileInfo(Path.Combine(currentDir, "DBF/bank_mode.DBF"));
-            if (programFileInfo.Exists)
+            var modeFileInfo = new FileInfo(Path.Combine(currentDir, "bank_mode.DBF"));
+            var programFileInfo = new FileInfo(Path.Combine(currentDir, "bank_mode.DBF"));
+            if (programFileInfo.Exists && modeFileInfo.Exists)
             {
                 IsFileLocked = !CheckIsFileLocked(modeFileInfo) || !CheckIsFileLocked(programFileInfo);
+                IsFileExist = true;
             }
             else
             {

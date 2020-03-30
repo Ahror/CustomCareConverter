@@ -48,7 +48,7 @@ namespace CustomCareConverter.ViewModels
             var selectedPrograms = new List<RowInfo>();
             var dir = Directory.GetCurrentDirectory();
             var dbf = new Dbf();
-            dbf.Read(Path.Combine(dir, "DBF/bank_mode.DBF"));
+            dbf.Read(Path.Combine(dir, "bank_mode.DBF"));
             int maxBankId = (int)dbf.Records.Max(x => x.Data[0]);
             foreach (var mode in Modes)
             {
@@ -87,7 +87,7 @@ namespace CustomCareConverter.ViewModels
 
         private static void ImportBankProgram(List<RowInfo> selectedPrograms, string dir, Dbf programDbf)
         {
-            programDbf.Read(Path.Combine(dir, "DBF/bank_program.DBF"));
+            programDbf.Read(Path.Combine(dir, "bank_program.DBF"));
             foreach (var program in selectedPrograms)
             {
                 var record = programDbf.CreateRecord();
@@ -130,12 +130,12 @@ namespace CustomCareConverter.ViewModels
             var newdbf = new Dbf();
             newdbf.Fields.AddRange(bank_mode.Fields);
             newdbf.Records.AddRange(bank_mode.Records);
-            newdbf.Write(Path.Combine(dir, "DBF/bank_mode.DBF"));
+            newdbf.Write(Path.Combine(dir, "bank_mode.DBF"));
 
             var newBankProgram = new Dbf();
             newBankProgram.Fields.AddRange(bank_program.Fields);
             newBankProgram.Records.AddRange(bank_program.Records);
-            newBankProgram.Write(Path.Combine(dir, "DBF/bank_program.DBF"));
+            newBankProgram.Write(Path.Combine(dir, "bank_program.DBF"));
         }
 
         public ObservableCollection<Mode> Modes { get; set; }
