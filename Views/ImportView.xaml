@@ -55,19 +55,23 @@
                                 <DataGridTemplateColumn.HeaderTemplate>
                                     <DataTemplate>
                                         <CheckBox
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        HorizontalContentAlignment="Center"
-                                        VerticalContentAlignment="Center"
-                                        FontSize="18"
-                                        IsChecked="{Binding ElementName=uiModes, Path=DataContext.SelectAll}" />
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            HorizontalContentAlignment="Center"
+                                            VerticalContentAlignment="Center"
+                                            FontSize="18"
+                                            IsChecked="{Binding ElementName=uiModes, Path=DataContext.SelectAll}" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.HeaderTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTextColumn
-                            Binding="{Binding Name}"
-                            Header="Name"
-                            IsReadOnly="True" />
+                                Binding="{Binding ModeCode}"
+                                Header="Mode Code"
+                                IsReadOnly="True" />
+                            <DataGridTextColumn
+                                Binding="{Binding Name}"
+                                Header="Name"
+                                IsReadOnly="True" />                           
                         </DataGrid.Columns>
                     </DataGrid>
                     <StackPanel>

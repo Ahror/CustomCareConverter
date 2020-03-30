@@ -25,6 +25,13 @@ namespace CustomCareConverter.Data
             set => this.RaiseAndSetIfChanged(ref _name, value);
         }
 
+        string _modeCode;
+        public string ModeCode
+        {
+            get => _modeCode;
+            set => this.RaiseAndSetIfChanged(ref _modeCode, value);
+        }
+
         public RowInfo ModeRowInfo { get; set; }
 
         public IList<RowInfo> ProgramsRowInfo { get; set; }

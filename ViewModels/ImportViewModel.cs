@@ -315,6 +315,10 @@ namespace CustomCareConverter.ViewModels
                             {
                                 mode.Name = cell.Value.ToString();
                             }
+                            else if (column.Name == "MODE_CODE")
+                            {
+                                mode.ModeCode = cell.Value;
+                            }
                             else if (column.Name == "BANKT_ID")
                             {
                                 mode.Id = int.Parse(cell.Value);

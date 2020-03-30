@@ -66,9 +66,13 @@
                                 </DataGridTemplateColumn.HeaderTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTextColumn
-                            Binding="{Binding Name}"
-                            Header="Name"
-                            IsReadOnly="True" />
+                                Binding="{Binding ModeCode}"
+                                Header="Mode Code"
+                                IsReadOnly="True" />
+                            <DataGridTextColumn
+                                Binding="{Binding Name}"
+                                Header="Name"
+                                IsReadOnly="True" />                            
                         </DataGrid.Columns>
                     </DataGrid>
                     <StackPanel>

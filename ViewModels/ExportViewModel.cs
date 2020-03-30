@@ -130,12 +130,12 @@ namespace CustomCareConverter.ViewModels
 
         private static void ZippingFile()
         {
-            var folderBrowserDialog1 = new FolderBrowserDialog();
+            var folderBrowserDialog1 = new SaveFileDialog();
             DialogResult result = folderBrowserDialog1.ShowDialog();
             if (result == DialogResult.OK)
             {
-                string folderName = folderBrowserDialog1.SelectedPath;
-                var zipPath = Path.Combine(folderName, "CSV.zip");
+                string folderName = folderBrowserDialog1.FileName;
+                var zipPath = folderName + ".zip";
                 if (File.Exists(zipPath))
                 {
                     try { File.Delete(zipPath); }
@@ -216,6 +216,10 @@ namespace CustomCareConverter.ViewModels
                         if (columnInfo.Name == "MODENAME")
                         {
                             mode.Name = rowValue.ToString();
+                        }
+                        else if (columnInfo.Name == "MODE_CODE")
+                        {
+                            mode.ModeCode = rowValue;
                         }
                         else if (columnInfo.Name == "BANKT_ID")
                         {
