@@ -62,6 +62,7 @@ namespace CustomCareConverter.ViewModels
             var dbf = new Dbf();
             dbf.Read(Path.Combine(dir, "bank_mode.DBF"));
             int maxBankId = (int)dbf.Records.Max(x => x.Data[0]);
+            int maxBankCode = (int)dbf.Records.Max(x => int.Parse(x.Data[1].ToString()));
             foreach (var mode in Modes)
             {
                 if (mode.IsSelected == false)
@@ -69,7 +70,25 @@ namespace CustomCareConverter.ViewModels
                     continue;
                 }
                 selectedPrograms.AddRange(mode.ProgramsRowInfo);
-                var record = dbf.CreateRecord();
+                DbfRecord record;
+                if (dbf.Records.FirstOrDefault(x => (int)x.Data[0] == int.Parse(mode.ModeRowInfo.CellItems[0].Value)) == null)
+                {
+                    record = dbf.CreateRecord();
+                    if (dbf.Records.Any())
+                    {
+                        maxBankCode++;
+                        mode.ModeRowInfo.CellItems[1].Value = maxBankCode.ToString();
+                    }
+                    else
+                    {
+                        mode.ModeRowInfo.CellItems[1].Value = "1000";
+                    }
+                }
+                else
+                {
+                    record = dbf.Records.FirstOrDefault(r => r.Data[0].ToString() == mode.ModeRowInfo.CellItems[0].Value);
+                }
+
                 int index = 0;
                 if (dbf.Records.FirstOrDefault(x => (int)x.Data[0] == int.Parse(mode.ModeRowInfo.CellItems[0].Value)) != null)
                 {
