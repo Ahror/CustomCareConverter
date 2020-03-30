@@ -83,7 +83,8 @@ namespace CustomCareConverter.ViewModels
                     }
                     writer.Flush();
                     stream.Position = 0;
-
+                    if (!Directory.Exists("CSV"))
+                        Directory.CreateDirectory("CSV");
                     using (var fileStream = File.Create("CSV/bank_mode.csv"))
                     {
                         stream.Seek(0, SeekOrigin.Begin);
