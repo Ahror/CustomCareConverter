@@ -59,61 +59,80 @@ namespace CustomCareConverter.ViewModels
         {
             var selectedPrograms = new List<RowInfo>();
             var dir = Directory.GetCurrentDirectory();
-            var dbf = new Dbf();
-            dbf.Read(Path.Combine(dir, "bank_mode.DBF"));
-            int maxBankId = (int)dbf.Records.Max(x => x.Data[0]);
-            int maxBankCode = (int)dbf.Records.Max(x => int.Parse(x.Data[1].ToString()));
-            foreach (var mode in Modes)
+            if (File.Exists(Path.Combine(dir, "bank_mode_copy.DBF")))
+                File.Delete(Path.Combine(dir, "bank_mode_copy.DBF"));
+            if (File.Exists(Path.Combine(dir, "bank_progam_copy.DBF")))
+                File.Delete(Path.Combine(dir, "bank_progam_copy.DBF"));
+            File.Copy(Path.Combine(dir, "bank_mode.DBF"), Path.Combine(dir, "bank_mode_copy.DBF"));
+            File.Copy(Path.Combine(dir, "bank_program.DBF"), Path.Combine(dir, "bank_progam_copy.DBF"));
+            try
             {
-                if (mode.IsSelected == false)
+                var dbf = new Dbf();
+                dbf.Read(Path.Combine(dir, "bank_mode.DBF"));
+                int maxBankId = (int)dbf.Records.Max(x => x.Data[0]);
+                int maxBankCode = (int)dbf.Records.Max(x => int.Parse(x.Data[1].ToString()));
+                foreach (var mode in Modes)
                 {
-                    continue;
-                }
-                selectedPrograms.AddRange(mode.ProgramsRowInfo);
-                DbfRecord record;
-                if (dbf.Records.FirstOrDefault(x => (int)x.Data[0] == int.Parse(mode.ModeRowInfo.CellItems[0].Value)) == null)
-                {
-                    record = dbf.CreateRecord();
-                    if (dbf.Records.Any())
+                    if (mode.IsSelected == false)
                     {
-                        maxBankCode++;
-                        mode.ModeRowInfo.CellItems[1].Value = maxBankCode.ToString();
+                        continue;
+                    }
+                    selectedPrograms.AddRange(mode.ProgramsRowInfo);
+                    DbfRecord record;
+                    if (dbf.Records.FirstOrDefault(x => (int)x.Data[0] == int.Parse(mode.ModeRowInfo.CellItems[0].Value)) == null)
+                    {
+                        record = dbf.CreateRecord();
+                        if (dbf.Records.Any())
+                        {
+                            maxBankCode++;
+                            mode.ModeRowInfo.CellItems[1].Value = maxBankCode.ToString();
+                        }
+                        else
+                        {
+                            mode.ModeRowInfo.CellItems[1].Value = "1000";
+                        }
                     }
                     else
                     {
-                        mode.ModeRowInfo.CellItems[1].Value = "1000";
+                        record = dbf.Records.FirstOrDefault(r => r.Data[0].ToString() == mode.ModeRowInfo.CellItems[0].Value);
                     }
-                }
-                else
-                {
-                    record = dbf.Records.FirstOrDefault(r => r.Data[0].ToString() == mode.ModeRowInfo.CellItems[0].Value);
-                }
 
-                int index = 0;
-                if (dbf.Records.FirstOrDefault(x => (int)x.Data[0] == int.Parse(mode.ModeRowInfo.CellItems[0].Value)) != null)
-                {
-                    maxBankId++;
-                    mode.ModeRowInfo.CellItems[0].Value = maxBankId.ToString();
+                    int index = 0;
+                    if (dbf.Records.FirstOrDefault(x => (int)x.Data[0] == int.Parse(mode.ModeRowInfo.CellItems[0].Value)) != null)
+                    {
+                        maxBankId++;
+                        mode.ModeRowInfo.CellItems[0].Value = maxBankId.ToString();
+                    }
+                    foreach (var rowItem in mode.ModeRowInfo.CellItems)
+                    {
+                        if (index == 4)
+                            record.Data[index] = rowItem.Value.ToLower() == "true";
+                        else if (index == 0)
+                            record.Data[index] = int.Parse(rowItem.Value);
+                        else if (index == 5)
+                            record.Data[index] = DateTime.Parse(rowItem.Value);
+                        else if (index == 7)
+                            record.Data[index] = DateTime.Parse(rowItem.Value);
+                        else
+                            record.Data[index] = rowItem.Value;
+                        index++;
+                    }
                 }
-                foreach (var rowItem in mode.ModeRowInfo.CellItems)
-                {
-                    if (index == 4)
-                        record.Data[index] = rowItem.Value.ToLower() == "true";
-                    else if (index == 0)
-                        record.Data[index] = int.Parse(rowItem.Value);
-                    else if (index == 5)
-                        record.Data[index] = DateTime.Parse(rowItem.Value);
-                    else if (index == 7)
-                        record.Data[index] = DateTime.Parse(rowItem.Value);
-                    else
-                        record.Data[index] = rowItem.Value;
-                    index++;
-                }
+                var programDbf = new Dbf();
+                ImportBankProgram(selectedPrograms, dir, programDbf);
+                Save(dir, dbf, programDbf);
+                ResultText = "Import finished!";
+                File.Delete(Path.Combine(dir, "bank_mode_copy.DBF"));
+                File.Delete(Path.Combine(dir, "bank_progam_copy.DBF"));
             }
-            var programDbf = new Dbf();
-            ImportBankProgram(selectedPrograms, dir, programDbf);
-            Save(dir, dbf, programDbf);
-            ResultText = "Import finished!";
+            catch (Exception)
+            {
+                ResultText = "Something went wrong";
+                File.Copy(Path.Combine(dir, "bank_mode_copy.DBF"), Path.Combine(dir, "bank_mode.DBF"));
+                File.Copy(Path.Combine(dir, "bank_program_copy.DBF"), Path.Combine(dir, "bank_progam.DBF"));
+                File.Delete(Path.Combine(dir, "bank_mode_copy.DBF"));
+                File.Delete(Path.Combine(dir, "bank_program_copy.DBF"));
+            }
         }
 
         private static void ImportBankProgram(List<RowInfo> selectedPrograms, string dir, Dbf programDbf)

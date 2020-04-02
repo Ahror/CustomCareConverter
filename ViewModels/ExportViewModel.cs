@@ -181,7 +181,8 @@ namespace CustomCareConverter.ViewModels
                         if (columnInfo.Name == "BANKT_ID")
                         {
                             var mode = Modes.FirstOrDefault(m => m.Id == int.Parse(rowValue));
-                            mode.ProgramsRowInfo.Add(rowInfo);
+                            if (mode != null)
+                                mode.ProgramsRowInfo.Add(rowInfo);
                         }
                         rowInfo.CellItems.Add(new CellItem { ColumnInfo = columnInfo, Value = rowValue, Order = i });
                     }
