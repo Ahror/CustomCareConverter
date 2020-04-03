@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CustomCareConverter.Data;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -13,5 +14,13 @@ namespace CustomCareConverter
     /// </summary>
     public partial class App : Application
     {
+        private void Application_Startup(object sender, StartupEventArgs e)
+        {
+            MainWindow wnd = new MainWindow();
+            if (e.Args.Length == 1 && e.Args[0] == "Admin")
+                UserType.IsAdmin = true;
+            wnd.Show();
+        }
+
     }
 }

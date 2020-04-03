@@ -147,10 +147,13 @@ namespace CustomCareConverter.ViewModels
         }
 
         public ObservableCollection<Mode> Modes { get; set; }
+        public ObservableCollection<ModeItem> ModeList { get; set; }
+
 
         private void LoadFiles()
         {
             var dir = Directory.GetCurrentDirectory();
+            LoadModeListFromFile(dir);
             LoadModeFromFile(dir);
             LoadProgramFromFile(dir);
         }
@@ -204,8 +207,20 @@ namespace CustomCareConverter.ViewModels
                     columnInfo.DataType = GetDataType(field.Type);
                     columns.Add(columnInfo);
                 }
-
-                foreach (DbfRecord record in dbf.Records)
+                List<DbfRecord> records = new List<DbfRecord>();
+                if (UserType.IsAdmin)
+                {
+                    records = dbf.Records;
+                }
+                else
+                {
+                    foreach (var item in dbf.Records)
+                    {
+                        if (ModeList.All(m => m.Id != int.Parse(item.Data[0].ToString())))
+                            records.Add(item);
+                    }
+                }
+                foreach (DbfRecord record in records)
                 {
                     var mode = new Mode();
                     var rowInfo = new RowInfo();
@@ -235,6 +250,73 @@ namespace CustomCareConverter.ViewModels
             }
         }
 
+        void LoadModeListFromFile(string dir)
+        {
+            var filePath = Path.Combine(dir, "ModeList.csv");
+            if (File.Exists(filePath))
+            {
+                ModeList = new ObservableCollection<ModeItem>();
+                using (var reader = new StreamReader(filePath))
+                using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                {
+                    var records = csv.GetRecords<dynamic>();
+                    bool isThisFirstTime = false;
+                    foreach (var record in records)
+                    {
+                        var mode = new ModeItem();
+                        if (!isThisFirstTime)
+                        {
+                            var mode1 = new ModeItem();
+                            bool first = false;
+                            isThisFirstTime = true;
+                            foreach (var cell in record)
+                            {
+                                if (!first)
+                                {
+                                    mode.Id = int.Parse(cell.Key);
+                                    mode1.Id = int.Parse(cell.Value);
+                                    first = true;
+                                }
+                                else
+                                {
+                                    mode.Name = cell.Key;
+                                    mode1.Name = cell.Value;
+                                }
+
+                            }
+                            ModeList.Add(mode);
+                            ModeList.Add(mode1);
+                        }
+
+                        else
+                        {
+                            bool first = false;
+                            foreach (var cell in record)
+                            {
+                                if (!first)
+                                {
+                                    first = true;
+                                    mode.Id = int.Parse(cell.Value);
+                                }
+                                else
+                                {
+                                    mode.Name = cell.Value;
+                                }
+                            }
+                            ModeList.Add(mode);
+                        }
+                    }
+                }
+            }
+        }
+        protected ColumnInfo GetColumnInfo(ColumnInfo columnInfo, string rowValue)
+        {
+            if (columnInfo.DataType == null)
+            {
+                columnInfo.DataType = DataType.Text;
+            }
+            return columnInfo;
+        }
         bool _selectAll;
         public bool SelectAll
         {

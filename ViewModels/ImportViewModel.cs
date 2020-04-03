@@ -33,10 +33,11 @@ namespace CustomCareConverter.ViewModels
         }
         public ImportViewModel()
         {
+            var dir = Directory.GetCurrentDirectory();
+            LoadModeListFromFile(dir);
             LoadModes = ReactiveCommand.Create(LoadFiles, outputScheduler: Scheduler.CurrentThread);
             Cancel = ReactiveCommand.Create(CloseWindow);
             Export = ReactiveCommand.Create(ImportDataToDBF);
-            Modes = new ObservableCollection<Mode>();
             this.WhenAnyValue(vm => vm.SelectAll).Subscribe((old) =>
             {
                 SelectAllModes(old);
@@ -188,7 +189,8 @@ namespace CustomCareConverter.ViewModels
             newBankProgram.Write(Path.Combine(dir, "bank_program.DBF"));
         }
 
-        public ObservableCollection<Mode> Modes { get; set; }
+        public ObservableCollection<ModeItem> ModeList { get; set; }
+        public ObservableCollection<Mode> Modes { get; set; } = new ObservableCollection<Mode>();
 
         private void LoadFiles()
         {
@@ -211,6 +213,7 @@ namespace CustomCareConverter.ViewModels
                 IsZipFileSelected = false;
             }
         }
+
         public bool IsZipFileSelected { get; set; }
 
         void DeleteExistedFile()
@@ -265,7 +268,8 @@ namespace CustomCareConverter.ViewModels
                             if (column.Name == "BANKT_ID")
                             {
                                 var mode = Modes.FirstOrDefault(m => m.Id == int.Parse(rowValue));
-                                mode.ProgramsRowInfo.Add(rowInfo);
+                                if (mode != null)
+                                    mode.ProgramsRowInfo.Add(rowInfo);
                             }
 
                             order++;
@@ -278,6 +282,67 @@ namespace CustomCareConverter.ViewModels
                 }
             }
         }
+
+        void LoadModeListFromFile(string dir)
+        {
+            var filePath = Path.Combine(dir, "ModeList.csv");
+            if (File.Exists(filePath))
+            {
+                ModeList = new ObservableCollection<ModeItem>();
+                using (var reader = new StreamReader(filePath))
+                using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                {
+                    var records = csv.GetRecords<dynamic>();
+                    bool isThisFirstTime = false;
+                    foreach (var record in records)
+                    {
+                        var mode = new ModeItem();
+                        if (!isThisFirstTime)
+                        {
+                            var mode1 = new ModeItem();
+                            bool first = false;
+                            isThisFirstTime = true;
+                            foreach (var cell in record)
+                            {
+                                if (!first)
+                                {
+                                    mode.Id = int.Parse(cell.Key);
+                                    mode1.Id = int.Parse(cell.Value);
+                                    first = true;
+                                }
+                                else
+                                {
+                                    mode.Name = cell.Key;
+                                    mode1.Name = cell.Value;
+                                }
+
+                            }
+                            ModeList.Add(mode);
+                            ModeList.Add(mode1);
+                        }
+
+                        else
+                        {
+                            bool first = false;
+                            foreach (var cell in record)
+                            {
+                                if (!first)
+                                {
+                                    first = true;
+                                    mode.Id = int.Parse(cell.Value);
+                                }
+                                else
+                                {
+                                    mode.Name = cell.Value;
+                                }
+                            }
+                            ModeList.Add(mode);
+                        }
+                    }
+                }
+            }
+        }
+
         protected ColumnInfo GetColumnInfo(ColumnInfo columnInfo, string rowValue)
         {
             if (columnInfo.DataType == null)
@@ -324,9 +389,28 @@ namespace CustomCareConverter.ViewModels
                 using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
                 {
                     bool isColumnCreated = false;
-                    var records = csv.GetRecords<dynamic>();
+                    var modeRecords = csv.GetRecords<dynamic>();
                     int rowIndex = 0;
                     var columns = new List<ColumnInfo>();
+                    List<dynamic> records = new List<dynamic>();
+                    if (UserType.IsAdmin)
+                    {
+                        records = modeRecords.ToList();
+                    }
+                    else
+                    {
+                        foreach (var item in modeRecords)
+                        {
+                            int id = 0;
+                            foreach (var i in item)
+                            {
+                                id = int.Parse(i.Value);
+                                break;
+                            }
+                            if (ModeList.All(m => m.Id != id))
+                                records.Add(item);
+                        }
+                    }
                     foreach (var record in records)
                     {
                         var mode = new Mode();

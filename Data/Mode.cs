@@ -3,6 +3,12 @@ using System.Collections.Generic;
 
 namespace CustomCareConverter.Data
 {
+    public class ModeItem : ReactiveObject
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+
     public class Mode : ReactiveObject
     {
         public Mode()
