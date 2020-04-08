@@ -58,51 +58,64 @@ namespace CustomCareConverter.ViewModels
 
         private void ImportDataToDBF()
         {
+            if (!Modes.Any())
+            {
+                ResultText = "There are not any selected item";
+                return;
+            }
             var selectedPrograms = new List<RowInfo>();
             var dir = Directory.GetCurrentDirectory();
-            if (File.Exists(Path.Combine(dir, "bank_mode_copy.DBF")))
-                File.Delete(Path.Combine(dir, "bank_mode_copy.DBF"));
-            if (File.Exists(Path.Combine(dir, "bank_progam_copy.DBF")))
-                File.Delete(Path.Combine(dir, "bank_progam_copy.DBF"));
-            File.Copy(Path.Combine(dir, "bank_mode.DBF"), Path.Combine(dir, "bank_mode_copy.DBF"));
-            File.Copy(Path.Combine(dir, "bank_program.DBF"), Path.Combine(dir, "bank_progam_copy.DBF"));
+            BackupFiles(dir);
             try
             {
                 var dbf = new Dbf();
                 dbf.Read(Path.Combine(dir, "bank_mode.DBF"));
                 int maxBankId = (int)dbf.Records.Max(x => x.Data[0]);
-                int maxBankCode = (int)dbf.Records.Max(x => int.Parse(x.Data[1].ToString()));
+                int maxBankCode = dbf.Records.Max(x => int.Parse(x.Data[1].ToString()));
                 foreach (var mode in Modes)
                 {
+                    bool isStandard = int.Parse(mode.ModeCode) < 1000;
                     if (mode.IsSelected == false)
                     {
                         continue;
                     }
                     selectedPrograms.AddRange(mode.ProgramsRowInfo);
                     DbfRecord record;
-                    if (dbf.Records.FirstOrDefault(x => (int)x.Data[0] == int.Parse(mode.ModeRowInfo.CellItems[0].Value)) == null)
+                    bool isNew = false;
+
+                    if (isStandard)
                     {
-                        record = dbf.CreateRecord();
-                        if (dbf.Records.Any())
+                        if (dbf.Records.FirstOrDefault(x => (int)x.Data[0] == int.Parse(mode.ModeRowInfo.CellItems[0].Value)) == null)
                         {
-                            maxBankCode++;
-                            mode.ModeRowInfo.CellItems[1].Value = maxBankCode.ToString();
+                            record = dbf.CreateRecord();
+                            isNew = true;
                         }
                         else
                         {
-                            mode.ModeRowInfo.CellItems[1].Value = "1000";
+                            record = dbf.Records.FirstOrDefault(r => r.Data[0].ToString() == mode.ModeRowInfo.CellItems[0].Value);
                         }
                     }
                     else
                     {
-                        record = dbf.Records.FirstOrDefault(r => r.Data[0].ToString() == mode.ModeRowInfo.CellItems[0].Value);
+                        record = dbf.CreateRecord();
+                        isNew = true;
+                        if (dbf.Records.Any())
+                        {
+                            maxBankCode++;
+                            mode.ModeRowInfo.CellItems[1].Value = maxBankCode.ToString().PadLeft(4, '0');
+                        }
+                        else
+                        {
+                            mode.ModeRowInfo.CellItems[1].Value = "1001";
+                        }
+
                     }
 
                     int index = 0;
                     if (dbf.Records.FirstOrDefault(x => (int)x.Data[0] == int.Parse(mode.ModeRowInfo.CellItems[0].Value)) != null)
                     {
                         maxBankId++;
-                        mode.ModeRowInfo.CellItems[0].Value = maxBankId.ToString();
+                        mode.ModeRowInfo.CellItems[0].Value = maxBankId.ToString().PadLeft(4, '0');
                     }
                     foreach (var rowItem in mode.ModeRowInfo.CellItems)
                     {
@@ -111,9 +124,9 @@ namespace CustomCareConverter.ViewModels
                         else if (index == 0)
                             record.Data[index] = int.Parse(rowItem.Value);
                         else if (index == 5)
-                            record.Data[index] = DateTime.Parse(rowItem.Value);
+                            record.Data[index] = isNew ? DateTime.Now : DateTime.Parse(rowItem.Value);
                         else if (index == 7)
-                            record.Data[index] = DateTime.Parse(rowItem.Value);
+                            record.Data[index] = DateTime.Now;
                         else
                             record.Data[index] = rowItem.Value;
                         index++;
@@ -123,17 +136,24 @@ namespace CustomCareConverter.ViewModels
                 ImportBankProgram(selectedPrograms, dir, programDbf);
                 Save(dir, dbf, programDbf);
                 ResultText = "Import finished!";
-                File.Delete(Path.Combine(dir, "bank_mode_copy.DBF"));
-                File.Delete(Path.Combine(dir, "bank_progam_copy.DBF"));
             }
             catch (Exception)
             {
                 ResultText = "Something went wrong";
-                File.Copy(Path.Combine(dir, "bank_mode_copy.DBF"), Path.Combine(dir, "bank_mode.DBF"));
-                File.Copy(Path.Combine(dir, "bank_program_copy.DBF"), Path.Combine(dir, "bank_progam.DBF"));
-                File.Delete(Path.Combine(dir, "bank_mode_copy.DBF"));
-                File.Delete(Path.Combine(dir, "bank_program_copy.DBF"));
             }
+        }
+
+        private void BackupFiles(string dir)
+        {
+            string folder = Path.Combine(dir, "mode_" + DateTime.Now.ToString("yyyy_MM_dd_HH_mm"));
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+            File.Copy(Path.Combine(dir, "bank_mode.DBF"), Path.Combine(folder, "bank_mode.DBF"));
+            if (File.Exists(Path.Combine(dir, "bank_mode.CDX")))
+                File.Copy(Path.Combine(dir, "bank_mode.CDX"), Path.Combine(folder, "bank_mode.CDX"));
+
+            ZipFile.CreateFromDirectory(folder, folder + ".zip");
+            Directory.Delete(folder, true);
         }
 
         private static void ImportBankProgram(List<RowInfo> selectedPrograms, string dir, Dbf programDbf)
@@ -402,8 +422,14 @@ namespace CustomCareConverter.ViewModels
                         foreach (var item in modeRecords)
                         {
                             int id = 0;
+                            bool first = true;
                             foreach (var i in item)
                             {
+                                if (first)
+                                {
+                                    first = false;
+                                    continue;
+                                }
                                 id = int.Parse(i.Value);
                                 break;
                             }

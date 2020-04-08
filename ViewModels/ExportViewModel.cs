@@ -59,6 +59,11 @@ namespace CustomCareConverter.ViewModels
 
         private void ExportDataToCSV()
         {
+            if (!Modes.Any())
+            {
+                ResultText = "There are not any selected item";
+                return;
+            }
             var selectedPrograms = new List<RowInfo>();
             using (MemoryStream stream = new MemoryStream())
             {
@@ -135,8 +140,9 @@ namespace CustomCareConverter.ViewModels
             DialogResult result = folderBrowserDialog1.ShowDialog();
             if (result == DialogResult.OK)
             {
-                string folderName = folderBrowserDialog1.FileName;
-                var zipPath = folderName + ".zip";
+                string zipPath = folderBrowserDialog1.FileName;
+                if (!zipPath.Contains("zip"))
+                    zipPath = zipPath + ".zip";
                 if (File.Exists(zipPath))
                 {
                     try { File.Delete(zipPath); }
@@ -216,7 +222,7 @@ namespace CustomCareConverter.ViewModels
                 {
                     foreach (var item in dbf.Records)
                     {
-                        if (ModeList.All(m => m.Id != int.Parse(item.Data[0].ToString())))
+                        if (ModeList.All(m => m.Id != int.Parse(item.Data[1].ToString())))
                             records.Add(item);
                     }
                 }
